@@ -1,42 +1,71 @@
-package test;
-
-import org.junit.Test;
+package bug;
 
 import java.sql.*;
 
-import static org.junit.Assert.fail;
+public class Main {
 
-public class ArrayAggTest {
+    private final String url;
+    private final String login;
+    private final String password;
 
-    private Connection openConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:postgresql://localhost/test", "login", "pass");
+    public Main(String url, String login, String password) {
+        this.url = url;
+        this.login = login;
+        this.password = password;
     }
 
-    @Test
+    public static void main(String[] args) throws SQLException {
+        if (args.length != 3) {
+            System.err.println("usage: bug.Main url login password");
+            System.exit(1);
+        }
+
+        Main main = new Main(args[0], args[1], args[2]);
+
+        main.prepareDatabase();
+        main.separateConnections();
+        main.singleConnection();
+    }
+
+    private Connection openConnection() throws SQLException {
+        return DriverManager.getConnection(url, login, password);
+    }
+
     public void singleConnection() throws SQLException {
-        prepareDatabase();
+        System.out.println("Testing using single connection...");
 
         try (Connection connection = openConnection()) {
             for (int i = 0; i < 10; i++) {
                 try {
                     findDepartmentInfos(connection);
                 } catch (Exception e) {
+                    System.out.println("failed after " + i + " iterations");
                     e.printStackTrace();
-                    fail("failed after " + i + " iterations");
+                    return;
                 }
             }
         }
+
+        System.out.println("ok");
     }
 
-    @Test
     public void separateConnections() throws SQLException {
-        prepareDatabase();
+        System.out.println("Testing using separate connections...");
 
         for (int i = 0; i < 10; i++) {
-            try (Connection connection = openConnection()) {
-                findDepartmentInfos(connection);
+            try {
+                try (Connection connection = openConnection()) {
+                    findDepartmentInfos(connection);
+                }
+            } catch (Exception e) {
+                System.out.println("failed after " + i + " iterations");
+                e.printStackTrace();
+                return;
             }
+
         }
+
+        System.out.println("ok");
     }
 
     private void prepareDatabase() throws SQLException {
