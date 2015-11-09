@@ -88,7 +88,7 @@ public class Main {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     try (ResultSet ars = rs.getArray(1).getResultSet()) {
-                        ars.getMetaData().getColumnLabel(1); // this throws NPE
+                        ars.getMetaData().getColumnType(1); // this throws NPE
                     }
                 }
             }
