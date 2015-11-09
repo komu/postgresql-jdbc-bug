@@ -1,0 +1,12 @@
+apply plugin: 'java'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.postgresql:postgresql:9.4-1205-jdbc42'
+
+    testCompile 'junit:junit:4.12'
+}
+
